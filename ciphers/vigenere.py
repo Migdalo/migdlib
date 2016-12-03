@@ -4,16 +4,14 @@ import string
 
 """ Helper functions """
 def get_alphabet_line(row):
-    alphabet = []
+    line = []
     # Create alphabet line
     for i in range(len(string.ascii_uppercase)):
         shift = i + row
-        if shift < len(string.ascii_uppercase):
-            alphabet.append(string.ascii_uppercase[shift])
-        else:
+        if shift >= len(string.ascii_uppercase):
             shift -= len(string.ascii_uppercase)
-            alphabet.append(string.ascii_uppercase[shift])
-    return alphabet
+        line.append(string.ascii_uppercase[shift])
+    return line
 
 def get_char_from_square(plainchar, keychar):
     column = string.ascii_uppercase.index(plainchar)
@@ -62,5 +60,3 @@ if __name__ == '__main__':
         print encrypt_vigenere(args.input, args.key)
     elif args.decrypt:
         print decrypt_vigenere(args.input, args.key)
-    else:
-        test_get_char_from_square()
