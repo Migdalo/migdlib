@@ -34,8 +34,11 @@ def morph_vigenere(text, key, morph_function):
             key[i]
         except:
             i = 0
-        morphtext.append(morph_function(c, key[i]))
-        i += 1
+        if c not in string.ascii_uppercase:
+            morphtext.append(c)
+        else:
+            morphtext.append(morph_function(c, key[i]))
+            i += 1
     return ''.join(morphtext)
     
 """ Encryption """
