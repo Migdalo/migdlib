@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """ Vigenere cipher """
 import argparse
 import string
@@ -60,6 +61,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     if args.encrypt:
-        print encrypt_vigenere(args.input, args.key)
+        print(encrypt_vigenere(args.input, args.key))
     elif args.decrypt:
-        print decrypt_vigenere(args.input, args.key)
+        print(decrypt_vigenere(args.input, args.key))
