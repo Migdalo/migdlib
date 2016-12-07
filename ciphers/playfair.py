@@ -53,13 +53,12 @@ def create_matrix(key):
                     matrix[i].append(alphabet[alphaidx])
                     alphaidx += 1
                 except:
-                    print 'Failed to create a key matrix.'
-                    return ''
-    
+                    print('Failed to create a key matrix.')
+                    return('')
     return matrix
 
-''' Decrypting Playfair cipher '''
-def decode_block(char1, char2, matrix):
+""" Shift blocks """
+def shift_block(char1, char2, matrix, shift_val):
     pos1 = (0, 0)
     pos2 = (0, 0)
     
@@ -71,12 +70,13 @@ def decode_block(char1, char2, matrix):
             pos2 = (line, matrix[line].index(char2))
           
     if pos1[0] == pos2[0]: # Both chars on same line
-        return get_new_pos(pos1, 0, -1, matrix) + get_new_pos(pos2, 0, -1, matrix)
+        return get_new_pos(pos1, 0, shift_val, matrix) + get_new_pos(pos2, 0, -shift_val, matrix)
     elif pos1[1] == pos2[1]: # Both chars on same column
-        return get_new_pos(pos1, -1, 0, matrix) + get_new_pos(pos2, -1, 0, matrix)
+        return get_new_pos(pos1, shift_val, 0, matrix) + get_new_pos(pos2, shift_val, 0, matrix)
     else: # Square
         return matrix[pos1[0]][pos2[1]] + matrix[pos2[0]][pos1[1]]
 
+""" Decrypt Playfair cipher """
 def decode_playfair(cipherinput, key):
     global playfair_matrix
     results = ''
@@ -94,41 +94,40 @@ def decode_playfair(cipherinput, key):
             
     # Decode
     for tc in cipher:
-        results += decode_block(tc[0], tc[1], matrix)
+        results += shift_block(tc[0], tc[1], matrix, -1)
     
     return results
 
-''' Encrypting Playfair cipher '''
-def encode_block(char1, char2, matrix):
-    pos1 = (0, 0)
-    pos2 = (0, 0)
-    
-    # Find the char position in playfair matrix
-    for line in range(len(matrix)):
-        if char1 in matrix[line]:
-            pos1 = (line, matrix[line].index(char1))
-        if char2 in matrix[line]:
-            pos2 = (line, matrix[line].index(char2))
-    
-    # Encode the position
-    if pos1[0] == pos2[0]: # Both chars on same line
-        return get_new_pos(pos1, 0, 1, matrix) + get_new_pos(pos2, 0, 1, matrix)
-    elif pos1[1] == pos2[1]: # Both chars on same column
-        return get_new_pos(pos1, 1, 0, matrix) + get_new_pos(pos2, 1, 0, matrix)
-    else: # Square
-        return matrix[pos1[0]][pos2[1]] + matrix[pos2[0]][pos1[1]]
-
+""" Encrypt Playfair cipher """
 def encode_playfair(plaintext, key):
     global playfair_matrix
     cipher = ''
     plaintext = list(''.join(plaintext.split()).upper())
     plain = []
-    counter = 0
     
     if not key:
         matrix = playfair_matrix
     else:
         matrix = create_matrix(key)
+    
+    # Handle double characters
+    plaintext = handle_double_chars(plaintext)
+    
+    # Change the user input to be a list with two chars as elements
+    for i in range(0, len(plaintext), 2):
+        plain.append(''.join(plaintext[i:i+2]))
+    
+    # Encode
+    for tc in plain:
+        cipher += shift_block(tc[0], tc[1], matrix, 1)
+    return cipher
+
+""" 
+If plaintext has two of the same chars next 
+to each other, add x in between them. 
+"""
+def handle_double_chars(plaintext):
+    counter = 0
     
     # Handle double characters
     while counter < len(plaintext) - 1:
@@ -137,30 +136,24 @@ def encode_playfair(plaintext, key):
             counter += 1
         else:
             counter += 2
-    
-    # Change the user input to be a list with two chars as elements
-    for i in range(0, len(plaintext), 2):
-        plain.append(''.join(plaintext[i:i+2]))
-    
-    # Encode
-    for tc in plain:
-        cipher += encode_block(tc[0], tc[1], matrix)
-    return cipher
+    return plaintext
 
-'''
-Main
-
-'''
-if __name__ == '__main__':
+def process_arguments():
     parser = argparse.ArgumentParser(description='Encode and decode Playfair cipher.', epilog='Developer: Migdalo')
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-e', '--encode', action='store_true', help='Encode Playfair cipher.')
     group.add_argument('-d', '--decode', action='store_true', help='Decode Playfair cipher.')
     parser.add_argument('-k', '--key', help='Key. If none is given a default key ("playfair example") is used.')
+    parser.add_argument('-a', help='Try to get the key with known plaintext attack.')
     parser.add_argument('input', help='String you want to encode/decode.')
     args = parser.parse_args()
     
     if args.encode:
-        print encode_playfair(args.input, args.key)
+        print(encode_playfair(args.input, args.key))
     elif args.decode:
-        print decode_playfair(args.input, args.key)
+        print(decode_playfair(args.input, args.key))
+
+''' Main '''
+if __name__ == '__main__':
+    process_arguments()
+    
