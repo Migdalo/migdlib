@@ -88,7 +88,7 @@ def encode_transposition(plaintext, key, printtable=False):
         tableheigth = len(plaintext) / len(key)
     
     # Add plaintext to transposition table
-    for i in range(tableheigth):
+    for i in range(int(tableheigth)):
         transposition_table.append([])
         for j in range(len(key)):
             try:
